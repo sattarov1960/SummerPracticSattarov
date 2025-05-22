@@ -1,4 +1,3 @@
-import '@styles/custom.css';
 import '@styles/tailwind.css';
 
 import { StrictMode } from 'react';
