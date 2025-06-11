@@ -1,14 +1,37 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Header from '@components/Header';
 import Footer from '@components/Footer';
 import YearNavigation from '../components/timeLine/YearNavigation';
 import YearSummary from '../components/timeLine/YearSummary';
 import EventCard from '../components/timeLine/EventCard';
-import { timelineData } from '../components/timeLine/data';
 
 const Timeline = () => {
-  const [selectedYear, setSelectedYear] = useState('1941');
+  const [timelineData, setTimelineData] = useState([]);
+  const [selectedYear, setSelectedYear] = useState('');
   const [selectedEvent, setSelectedEvent] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchTimeline = async () => {
+      try {
+        const response = await fetch('http://127.0.0.1:8000/timeLine');
+        if (!response.ok) {
+          throw new Error(`Ошибка: ${response.statusText}`);
+        }
+        const data = await response.json();
+        setTimelineData(data);
+        setSelectedYear(data.length > 0 ? data[0].year : '');
+      } catch (err) {
+        console.error('Ошибка при загрузке таймлайна:', err);
+        setError('Не удалось загрузить данные хронологии');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTimeline();
+  }, []);
 
   const currentYearData = timelineData.find((data) => data.year === selectedYear);
 
@@ -29,32 +52,44 @@ const Timeline = () => {
           </div>
         </section>
 
-        <YearNavigation
-          years={timelineData}
-          selectedYear={selectedYear}
-          onSelectYear={setSelectedYear}
-        />
+        {loading && (
+          <div className="text-center py-8 text-gray-600">Загрузка данных...</div>
+        )}
 
-        {currentYearData && (
-          <section className="py-12">
-            <div className="container mx-auto px-4">
-              <YearSummary
-                year={currentYearData.year}
-                summary={currentYearData.summary}
-              />
+        {error && (
+          <div className="text-center py-8 text-red-500">{error}</div>
+        )}
 
-              <div className="mt-12 space-y-8">
-                {currentYearData.events.map((event, index) => (
-                  <EventCard
-                    key={event.date}
-                    event={event}
-                    index={index}
-                    onClick={setSelectedEvent}
+        {!loading && !error && timelineData.length > 0 && (
+          <>
+            <YearNavigation
+              years={timelineData}
+              selectedYear={selectedYear}
+              onSelectYear={setSelectedYear}
+            />
+
+            {currentYearData && (
+              <section className="py-12">
+                <div className="container mx-auto px-4">
+                  <YearSummary
+                    year={currentYearData.year}
+                    summary={currentYearData.summary}
                   />
-                ))}
-              </div>
-            </div>
-          </section>
+
+                  <div className="mt-12 space-y-8">
+                    {currentYearData.events.map((event, index) => (
+                      <EventCard
+                        key={event.date}
+                        event={event}
+                        index={index}
+                        onClick={setSelectedEvent}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </section>
+            )}
+          </>
         )}
       </main>
 

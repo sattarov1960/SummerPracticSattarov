@@ -1,13 +1,9 @@
-import { motion } from 'framer-motion';
 import { MapPin } from 'lucide-react';
 import IconMapper from './IconMapper';
 
 const EventCard = ({ event, index, onClick }) => (
-  <motion.div
+  <div
     key={event.date}
-    initial={{ opacity: 0, x: -20 }}
-    animate={{ opacity: 1, x: 0 }}
-    transition={{ duration: 0.5, delay: index * 0.1 }}
     className="bg-white rounded-lg shadow-lg overflow-hidden cursor-pointer"
     onClick={() => onClick(event)}
   >
@@ -33,7 +29,7 @@ const EventCard = ({ event, index, onClick }) => (
         </div>
       </div>
     </div>
-  </motion.div>
+  </div>
 );
 
 export default EventCard;
